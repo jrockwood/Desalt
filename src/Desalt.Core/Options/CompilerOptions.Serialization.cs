@@ -111,7 +111,7 @@ namespace Desalt.Core.Options
             /// <param name="serializer">The calling serializer.</param>
             public override void WriteJson(
                 JsonWriter writer,
-                ImmutableDictionary<TKey, TValue> value,
+                ImmutableDictionary<TKey, TValue>? value,
                 JsonSerializer serializer)
             {
                 writer.WriteStartObject();
@@ -140,7 +140,7 @@ namespace Desalt.Core.Options
             public override ImmutableDictionary<TKey, TValue> ReadJson(
                 JsonReader reader,
                 Type objectType,
-                ImmutableDictionary<TKey, TValue> existingValue,
+                ImmutableDictionary<TKey, TValue>? existingValue,
                 bool hasExistingValue,
                 JsonSerializer serializer)
             {
@@ -193,7 +193,7 @@ namespace Desalt.Core.Options
             /// <param name="writer">The <see cref="JsonWriter"/> to write to.</param>
             /// <param name="value">The value.</param>
             /// <param name="serializer">The calling serializer.</param>
-            public override void WriteJson(JsonWriter writer, SymbolTableOverrides value, JsonSerializer serializer)
+            public override void WriteJson(JsonWriter writer, SymbolTableOverrides? value, JsonSerializer serializer)
             {
                 if (value == null)
                 {
@@ -228,7 +228,7 @@ namespace Desalt.Core.Options
             public override SymbolTableOverrides ReadJson(
                 JsonReader reader,
                 Type objectType,
-                SymbolTableOverrides existingValue,
+                SymbolTableOverrides? existingValue,
                 bool hasExistingValue,
                 JsonSerializer serializer)
             {

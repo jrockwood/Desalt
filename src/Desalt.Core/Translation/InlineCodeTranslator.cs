@@ -266,7 +266,7 @@ namespace Desalt.Core.Translation
         private static int TryFindIndexOfParameter(
             string parameterName,
             InlineCodeContext inlineCodeContext,
-            [NotNullWhen(true)] out Diagnostic? diagnostic)
+            out Diagnostic? diagnostic)
         {
             // Find the position of the parameter in the parameter list.
             IParameterSymbol foundParameter =

@@ -65,7 +65,7 @@ namespace Desalt.TypeScriptAst.Tests.Emit
                 throw new NotImplementedException();
             }
 
-            public bool Equals(ITsAstNode other)
+            public bool Equals(ITsAstNode? other)
             {
                 throw new NotImplementedException();
             }
