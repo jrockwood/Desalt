@@ -197,7 +197,7 @@ namespace Desalt.Core.Translation
             /// <summary>
             /// Called when the visitor visits a IdentifierNameSyntax node.
             /// </summary>
-            /// <returns>An <see cref="ITsIdentifier"/> or <see cref="ITsMemberDotExpression"/>.</returns>
+            /// <returns>An <see cref="ITsIdentifier"/>, <see cref="ITsMemberDotExpression"/>, or <see cref="IMemberAccessOmittedIdentifier"/>.</returns>
             public override ITsExpression VisitIdentifierName(IdentifierNameSyntax node)
             {
                 // Try to get the script name of the expression.
@@ -207,6 +207,12 @@ namespace Desalt.Core.Translation
                 if (symbol == null)
                 {
                     return Factory.Identifier(node.Identifier.Text);
+                }
+
+                if (ScriptSymbolTable.TryGetValue(symbol, out IScriptTypeSymbol? typeSymbol)
+                    && typeSymbol.TreatMethodsAsGlobal)
+                {
+                    return Factory.MemberAccessOmittedIdentifier();  
                 }
 
                 ITsExpression translated = Context.TranslateIdentifierName(symbol, node);
@@ -234,18 +240,40 @@ namespace Desalt.Core.Translation
             /// <summary>
             /// Called when the visitor visits a MemberAccessExpressionSyntax node.
             /// </summary>
-            /// <returns>An <see cref="ITsMemberDotExpression"/>.</returns>
+            /// <returns>An <see cref="ITsExpression"/> which is usually, but not always, a <see cref="ITsMemberDotExpression"/>.</returns>
             public override ITsExpression VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
             {
                 var leftSide = VisitSubExpression(node.Expression);
 
                 ISymbol? symbol = SemanticModel.GetSymbolInfo(node).Symbol;
 
+                IScriptTypeSymbol? typeSymbol = null;
+                if (symbol != null)
+                {
+                    ScriptSymbolTable.TryGetValue(symbol, out typeSymbol);
+                }
+
+                if (typeSymbol != null && typeSymbol.TreatMethodsAsGlobal)
+                {
+                    // The right-hand side is a static class with a [GlobalMethods] attribute,
+                    // which hoists class references up to the global namespace
+                    // (omitting *all* other enclosing classes or namespaces),
+                    // so we discard the whole expression.
+                    return Factory.MemberAccessOmittedIdentifier();
+                }
+
                 // Get the script name - the symbol can be null if we're inside a dynamic scope since all
                 // bets are off with the type checking.
-                string scriptName = symbol == null
+                 string scriptName = symbol == null
                     ? node.Name.Identifier.Text
                     : ScriptSymbolTable.GetComputedScriptNameOrDefault(symbol, node.Name.Identifier.Text);
+
+                // Is the left side a type or namespace that should be omitted here?
+                if (leftSide is IMemberAccessOmittedIdentifier ||
+                    (typeSymbol != null && typeSymbol.IgnoreNamespace))
+                {
+                    return Factory.Identifier(scriptName);
+                }
 
                 ITsMemberDotExpression translated = Factory.MemberDot(leftSide, scriptName);
                 return translated;
@@ -534,7 +562,7 @@ namespace Desalt.Core.Translation
                 bool hasLeftSideAlreadyBeenTranslatedWithInlineCode = node.Expression.Kind()
                     .IsOneOf(SyntaxKind.InvocationExpression, SyntaxKind.ObjectCreationExpression);
 
-                // Wee if there's an [InlineCode] entry for the method invocation.
+                // See if there's an [InlineCode] entry for the method invocation.
                 if (!hasLeftSideAlreadyBeenTranslatedWithInlineCode &&
                     InlineCodeTranslator.TryTranslateMethodCall(
                         Context,

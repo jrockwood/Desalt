@@ -98,5 +98,11 @@ namespace Desalt.TypeScriptAst.Ast
             ITsQualifiedName qualifiedName = QualifiedName(dottedName);
             return new TsGenericTypeName(qualifiedName.Left, qualifiedName.Right, typeArguments.ToImmutableArray());
         }
+
+        public static ITsExpression MemberAccessOmittedIdentifier()
+        {
+            // what about trivia?
+            return new MemberAccessOmittedIdentifier();
+        }
     }
 }

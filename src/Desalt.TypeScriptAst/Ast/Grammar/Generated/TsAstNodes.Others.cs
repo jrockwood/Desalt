@@ -1202,6 +1202,30 @@ namespace Desalt.TypeScriptAst.Ast
             node.Text == value ? node : new TsIdentifier(value, node.LeadingTrivia, node.TrailingTrivia);
     }
 
+    public interface IMemberAccessOmittedIdentifier : ITsAstNode, ITsExpression
+    {
+    }
+
+    /// <summary>
+    /// Represents a context where a C# identifier is to be omitted from TypeScript member access (dot) expressions.
+    /// </summary>
+    internal partial class MemberAccessOmittedIdentifier : TsAstNode, IMemberAccessOmittedIdentifier
+    {
+        public MemberAccessOmittedIdentifier(
+            ImmutableArray<ITsAstTriviaNode>? leadingTrivia = null,
+            ImmutableArray<ITsAstTriviaNode>? trailingTrivia = null)
+            : base(leadingTrivia, trailingTrivia)
+        {
+        }
+
+        public override void Accept(TsVisitor visitor) => visitor.VisitMemberAccessOmittedIdentifier(this);
+        protected override void EmitContent(Emitter emitter) => TsAstEmitter.EmitMemberAccessOmittedIdentifier(emitter, this);
+        public override ITsAstNode ShallowCopy(
+            ImmutableArray<ITsAstTriviaNode> leadingTrivia,
+            ImmutableArray<ITsAstTriviaNode> trailingTrivia) =>
+            new MemberAccessOmittedIdentifier(leadingTrivia, trailingTrivia);
+    }
+
     //// ===============================================================================================================
     //// ImplementationElement
     //// ===============================================================================================================

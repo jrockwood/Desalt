@@ -1543,5 +1543,10 @@ namespace Desalt.TypeScriptAst.Ast
             ambientNamespaceElement.InterfaceDeclaration?.Emit(emitter);
             ambientNamespaceElement.ImportAliasDeclaration?.Emit(emitter);
         }
+
+        public static void EmitMemberAccessOmittedIdentifier(Emitter emitter, IMemberAccessOmittedIdentifier memberAccessOmittedIdentifier)
+        {
+            throw new InvalidOperationException("MemberAccessOmittedIdentifier should never be emitted");
+        }
     }
 }

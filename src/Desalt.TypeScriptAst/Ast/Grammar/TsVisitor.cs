@@ -13,6 +13,8 @@
 
 #nullable enable
 
+using System;
+
 namespace Desalt.TypeScriptAst.Ast
 {
     /// <summary>
@@ -679,5 +681,7 @@ namespace Desalt.TypeScriptAst.Ast
         /// Visits an element in an ambient namespace declaration.
         /// </summary>
         public virtual void VisitAmbientNamespaceElement(ITsAmbientNamespaceElement node) => Visit(node);
+
+        public virtual void VisitMemberAccessOmittedIdentifier(IMemberAccessOmittedIdentifier node) => Visit(node);
     }
 }

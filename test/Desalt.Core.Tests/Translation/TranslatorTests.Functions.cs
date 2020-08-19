@@ -454,6 +454,150 @@ class NavigationMetricsCollector {
                 SymbolDiscoveryKind.DocumentAndReferencedTypes);
         }
 
+        [Test]
+        public async Task Translate_should_omit_classes_marked_with_GlobalMethods_in_member_access()
+        {
+            await AssertTranslation(
+                @"
+[GlobalMethods]
+public static class A
+{
+    public static int Method1(int x) { return x; }
+
+    public static int Number2;
+}
+
+class B
+{
+    public void Invoker()
+    {
+        var i = A.Method1(42);
+        var j = A.Number2;
+    }
+}
+",
+@"
+global.method1 = function(x: number): number {
+  return x;
+};
+
+global.number2: integer = 0;
+
+class B {
+  public invoker(): void {
+    let i: number = method1(42);
+    let j: number = number2;
+  }
+}
+");
+        }
+
+        [Test]
+        [Ignore("Namespaces are not yet implemented")]
+        public async Task Translate_should_omit_classes_marked_with_GlobalMethods_and_their_namespaces_in_member_access()
+        {
+            await AssertTranslation(
+                @"
+[GlobalMethods]
+namespace N {
+    public static class A
+    {
+        public static int Method1(int x) { return x; }
+
+        public static int Number2;
+    }
+}
+
+class B
+{
+    public void Invoker()
+    {
+        var i = N.A.Method1(42);
+        var j = N.A.Number2;
+    }
+}
+",
+@"
+global.method1 = function(x: number): number {
+  return x;
+};
+
+global.number2: number = 0;
+
+class B {
+  public invoker(): void {
+    let i: number = method1(42);
+    let j: number = number2;
+  }
+}
+");
+        }
+
+        [Test]
+        [Ignore("Namespaces are not yet implemented")]
+        public async Task Translate_should_omit_namespaces_of_classes_marked_with_IgnoreNamespace()
+        {
+            await AssertTranslation(
+                @"
+
+namespace P.D.Q {
+    [IgnoreNamespace]
+    public class A
+    {
+        public static int Method1(int x) { return x; }
+    }
+}
+
+class B
+{
+    public P.D.Q.A MemberA;
+
+    public void InvokeStaticOnA()
+    {
+        var i = P.D.Q.A.Method1(42);
+    }
+
+    public P.D.Q.A MethodA(P.D.Q.A ParameterA)
+    {
+        P.D.Q.A methodScopedA = new P.D.Q.A();
+        methodScopedA = (P.D.Q.A)ParameterA;
+        return methodScopedA;
+    }
+}
+
+using namespace P.D;
+class C
+{
+    public Q.A MemberA;
+}
+",
+@"
+export class A {
+  public method1(x: number): number {
+    return x;
+  }
+}
+
+class B {
+  public memberA: A;
+
+  public invokeStaticOnA(): void {
+    let i: number = A.method1(42);
+  }
+
+  public A methodA(parameterA: A): A {
+    let methodScopedA: A = new A();
+    methodScopedA = <A>parameterA;
+    return methodScopedA;
+  }
+}
+
+class C {
+  public memberA: A;
+}
+");
+        }
+
         //// ===========================================================================================================
         //// Method Invocations with `params` Arrays Tests
         //// ===========================================================================================================
