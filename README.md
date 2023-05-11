@@ -1,6 +1,9 @@
 # Desalt
 Converts Saltarelle C# files and projects to TypeScript.
 
+**Hey Tableau/VCI** - Before you start using this codebase, I encourage you
+to reach out to me. I might be able to help you out.
+
 ## History
 The history of this project starts in the early 2000s while I was working at
 Microsoft on the Excel Web Access project. I and my colleagues were tired of
